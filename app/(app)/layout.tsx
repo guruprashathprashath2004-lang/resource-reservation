@@ -14,6 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900">Dashboard</Link>
             <Link href="/resources" className="text-sm text-gray-600 hover:text-gray-900">Resources</Link>
             <Link href="/reservations" className="text-sm text-gray-600 hover:text-gray-900">Reservations</Link>
+            <Link href="/availability" className="text-sm text-gray-600 hover:text-gray-900">Availability</Link>
           </div>
           <div className="flex items-center gap-3 text-sm">
             <span className="text-gray-600">
