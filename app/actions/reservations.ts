@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireUser } from "@/lib/auth";
+import { requireUser, requireAdmin } from "@/lib/auth";
 import type { FormState } from "@/app/actions/auth";
 
 const LOCAL = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
@@ -73,7 +73,7 @@ export async function createReservation(_: FormState, formData: FormData): Promi
         notes: notes || null,
         startTime,
         endTime,
-        status: "APPROVED",
+        status: user.role === "ADMIN" ? "APPROVED" : "PENDING",
         resourceId,
         userId: user.id,
       },
@@ -109,4 +109,35 @@ export async function cancelReservation(formData: FormData) {
   });
 
   revalidatePath("/reservations");
+}
+
+async function decide(formData: FormData, status: "APPROVED" | "REJECTED") {
+  const admin = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+
+  // Only a PENDING reservation can be decided, guards against double clicks
+  const result = await prisma.reservation.updateMany({
+    where: { id, status: "PENDING" },
+    data: { status },
+  });
+  if (result.count === 0) return;
+
+  await prisma.auditLog.create({
+    data: {
+      action: status === "APPROVED" ? "RESERVATION_APPROVED" : "RESERVATION_REJECTED",
+      entity: "Reservation",
+      entityId: id,
+      userId: admin.id,
+    },
+  });
+
+  revalidatePath("/reservations");
+}
+
+export async function approveReservation(formData: FormData) {
+  await decide(formData, "APPROVED");
+}
+
+export async function rejectReservation(formData: FormData) {
+  await decide(formData, "REJECTED");
 }

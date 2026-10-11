@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { cancelReservation } from "@/app/actions/reservations";
+import { cancelReservation, approveReservation, rejectReservation } from "@/app/actions/reservations";
 import { formatDateTime } from "@/lib/datetime";
 
 const badge: Record<string, string> = {
@@ -64,13 +64,27 @@ export default async function ReservationsPage() {
                     <td className="px-4 py-3">
                       <span className={`rounded px-2 py-0.5 text-xs ${badge[r.status]}`}>{r.status}</span>
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      {cancellable && (
-                        <form action={cancelReservation}>
-                          <input type="hidden" name="id" value={r.id} />
-                          <button className="rounded-md border border-gray-300 px-2 py-1 hover:bg-gray-100">Cancel</button>
-                        </form>
-                      )}
+                                        <td className="px-4 py-3">
+                      <div className="flex justify-end gap-2">
+                        {isAdmin && r.status === "PENDING" && r.endTime > now && (
+                          <>
+                            <form action={approveReservation}>
+                              <input type="hidden" name="id" value={r.id} />
+                              <button className="rounded-md bg-green-600 px-2 py-1 text-white hover:bg-green-700">Approve</button>
+                            </form>
+                            <form action={rejectReservation}>
+                              <input type="hidden" name="id" value={r.id} />
+                              <button className="rounded-md border border-red-300 px-2 py-1 text-red-700 hover:bg-red-50">Reject</button>
+                            </form>
+                          </>
+                        )}
+                        {cancellable && (
+                          <form action={cancelReservation}>
+                            <input type="hidden" name="id" value={r.id} />
+                            <button className="rounded-md border border-gray-300 px-2 py-1 hover:bg-gray-100">Cancel</button>
+                          </form>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
