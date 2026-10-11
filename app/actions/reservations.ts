@@ -102,6 +102,7 @@ export async function cancelReservation(formData: FormData) {
   if (!reservation) return;
   if (reservation.userId !== user.id && user.role !== "ADMIN") return;
   if (reservation.status === "CANCELLED" || reservation.status === "REJECTED") return;
+  if (reservation.endTime <= new Date()) return;
 
   await prisma.reservation.update({ where: { id }, data: { status: "CANCELLED" } });
   await prisma.auditLog.create({
