@@ -272,6 +272,15 @@ export default async function ReservationsPage({
                             </>
                           )}
 
+                          {active && r.startTime > now && (
+                            <Link
+                              href={`/reservations/${r.id}/edit`}
+                              className="rounded-md border border-gray-300 px-2 py-1 hover:bg-gray-100"
+                            >
+                              Edit
+                            </Link>
+                          )}
+
                           {active && !ended && (
                             <form action={cancelReservation}>
                               <input type="hidden" name="id" value={r.id} />

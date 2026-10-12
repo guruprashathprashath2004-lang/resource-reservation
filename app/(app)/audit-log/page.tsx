@@ -10,6 +10,7 @@ const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 const ACTIONS = [
   { value: "RESERVATION_CREATED", label: "Reservation created" },
+    { value: "RESERVATION_UPDATED", label: "Reservation updated" },
   { value: "RESERVATION_APPROVED", label: "Reservation approved" },
   { value: "RESERVATION_REJECTED", label: "Reservation rejected" },
   { value: "RESERVATION_CANCELLED", label: "Reservation cancelled" },

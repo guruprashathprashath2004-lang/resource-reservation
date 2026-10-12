@@ -38,3 +38,18 @@ export function formatDateLabel(date: string) {
     year: "numeric",
   }).format(new Date(`${date}T00:00:00Z`));
 }
+
+// Value for <input type="datetime-local">, in Sri Lanka time
+export function toColomboInputValue(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}`;
+}
