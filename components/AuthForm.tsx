@@ -7,9 +7,13 @@ import type { FormState } from "@/app/actions/auth";
 type Props = {
   mode: "login" | "register";
   action: (state: FormState, formData: FormData) => Promise<FormState>;
+  teams?: { id: string; name: string }[];
 };
 
-export default function AuthForm({ mode, action }: Props) {
+const input = "w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900";
+const label = "mb-1 block text-sm font-medium text-gray-700";
+
+export default function AuthForm({ mode, action, teams = [] }: Props) {
   const [state, formAction, pending] = useActionState(action, undefined);
   const isLogin = mode === "login";
 
@@ -23,18 +27,30 @@ export default function AuthForm({ mode, action }: Props) {
       <form action={formAction} className="space-y-4">
         {!isLogin && (
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="name">Name</label>
-            <input id="name" name="name" required className="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900" />
+            <label className={label} htmlFor="name">Name</label>
+            <input id="name" name="name" required className={input} />
           </div>
         )}
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="email">Email</label>
-          <input id="email" name="email" type="email" required className="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900" />
+          <label className={label} htmlFor="email">Email</label>
+          <input id="email" name="email" type="email" required className={input} />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="password">Password</label>
-          <input id="password" name="password" type="password" required className="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900" />
+          <label className={label} htmlFor="password">Password</label>
+          <input id="password" name="password" type="password" required className={input} />
         </div>
+
+        {!isLogin && teams.length > 0 && (
+          <div>
+            <label className={label} htmlFor="teamId">Team (optional)</label>
+            <select id="teamId" name="teamId" defaultValue="" className={input}>
+              <option value="">No team</option>
+              {teams.map((t) => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {state?.error && (
           <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>

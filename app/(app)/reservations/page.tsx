@@ -23,7 +23,10 @@ export default async function ReservationsPage() {
 
   const reservations = await prisma.reservation.findMany({
     where: isAdmin ? {} : { userId: user.id },
-    include: { resource: true, user: { select: { name: true } } },
+    include: {
+      resource: true,
+      user: { select: { name: true, team: { select: { name: true } } } },
+    },
     orderBy: { startTime: "desc" },
     take: 100,
   });
@@ -77,7 +80,12 @@ export default async function ReservationsPage() {
                   <tr key={r.id} className="border-b border-gray-100 last:border-0">
                     <td className="px-4 py-3 font-medium">{r.title}</td>
                     <td className="px-4 py-3">{r.resource.name}</td>
-                    {isAdmin && <td className="px-4 py-3">{r.user.name}</td>}
+                    {isAdmin && (
+                      <td className="px-4 py-3">
+                        {r.user.name}
+                        {r.user.team && <div className="text-xs text-gray-500">{r.user.team.name}</div>}
+                      </td>
+                    )}
                     <td className="px-4 py-3">{formatDateTime(r.startTime)}</td>
                     <td className="px-4 py-3">{formatDateTime(r.endTime)}</td>
                     <td className="px-4 py-3">
