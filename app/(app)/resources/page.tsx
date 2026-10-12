@@ -18,9 +18,14 @@ export default async function ResourcesPage() {
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Resources</h1>
         {isAdmin && (
-          <Link href="/resources/new" className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
-            Add resource
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/resources/categories" className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm hover:bg-gray-100">
+              Manage categories
+            </Link>
+            <Link href="/resources/new" className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+              Add resource
+            </Link>
+          </div>
         )}
       </div>
 
