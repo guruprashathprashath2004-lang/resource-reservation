@@ -10,7 +10,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <header className="border-b border-gray-200 bg-white">
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-6">
-            <Link href="/dashboard" className="font-semibold text-indigo-600">Reservations</Link>
+            <Link href="/dashboard" className="font-semibold text-indigo-600">Resource Reservation</Link>
             <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900">Dashboard</Link>
             <Link href="/resources" className="text-sm text-gray-600 hover:text-gray-900">Resources</Link>
             <Link href="/reservations" className="text-sm text-gray-600 hover:text-gray-900">Reservations</Link>
