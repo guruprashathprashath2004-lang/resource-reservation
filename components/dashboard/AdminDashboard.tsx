@@ -151,7 +151,10 @@ export default async function AdminDashboard({ name }: { name: string }) {
       </div>
 
       <section className={card}>
-        <h2 className="mb-3 font-semibold">Recent activity</h2>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-semibold">Recent activity</h2>
+          <Link href="/audit-log" className="text-sm font-medium text-indigo-600 hover:underline">View all</Link>
+        </div>
         {activity.length === 0 ? (
           <p className="text-sm text-gray-500">No activity yet.</p>
         ) : (
