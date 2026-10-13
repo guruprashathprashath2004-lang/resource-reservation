@@ -40,9 +40,12 @@ export default async function DashboardPage() {
     isAdmin
       ? prisma.reservation.count({ where: { status: "PENDING", endTime: { gt: now } } })
       : Promise.resolve(0),
-    prisma.reservation.findMany({
+    prisma.reservation.groupBy({
+      by: ["resourceId"],
       where: { status: "APPROVED", startTime: { gte: since, lt: now } },
-      select: { resourceId: true },
+      _count: { _all: true },
+      orderBy: { _count: { resourceId: "desc" } },
+      take: 5,
     }),
   ]);
 
@@ -63,13 +66,12 @@ export default async function DashboardPage() {
   });
 
   // Busiest resources in the last 30 days
-  const counts = new Map<string, number>();
-  for (const r of recent) counts.set(r.resourceId, (counts.get(r.resourceId) ?? 0) + 1);
   const nameById = new Map(resources.map((r) => [r.id, r.name]));
-  const busiest = [...counts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([id, count]) => ({ id, name: nameById.get(id) ?? "Unknown", count }));
+  const busiest = recent.map(({ resourceId, _count }) => ({
+    id: resourceId,
+    name: nameById.get(resourceId) ?? "Unknown",
+    count: _count._all,
+  }));
   const maxCount = busiest[0]?.count ?? 1;
 
   const card = "rounded-xl border border-gray-200 bg-white p-5";
@@ -115,7 +117,7 @@ export default async function DashboardPage() {
                   <div>
                     <p className="font-medium">{r.title}</p>
                     <p className="text-gray-500">
-                      {r.resource.name}
+                      {r.resource.name} · {r.attendeeCount}/{r.resource.capacity} people
                       {isAdmin ? ` · ${r.user.name}` : ""}
                     </p>
                     <p className="text-gray-500">{formatDateTime(r.startTime)}</p>

@@ -7,6 +7,7 @@ import { createReservation } from "@/app/actions/reservations";
 type ResourceOption = {
   id: string;
   name: string;
+  capacity: number;
   openHour: number;
   closeHour: number;
   maxDurationMinutes: number;
@@ -26,7 +27,7 @@ export default function ReservationForm({ resources }: { resources: ResourceOpti
           <option value="" disabled>Select resource</option>
           {resources.map((r) => (
             <option key={r.id} value={r.id}>
-              {r.name} ({r.openHour}:00-{r.closeHour}:00, max {r.maxDurationMinutes} min)
+            {r.name} (capacity {r.capacity}, {r.openHour}:00-{r.closeHour}:00, max {r.maxDurationMinutes} min)
             </option>
           ))}
         </select>
@@ -37,11 +38,20 @@ export default function ReservationForm({ resources }: { resources: ResourceOpti
         <input id="title" name="title" required placeholder="e.g. Sprint planning" className={input} />
       </div>
 
+      <div>
+        <label className={label} htmlFor="attendeeCount">Number of people</label>
+        <input id="attendeeCount" name="attendeeCount" type="number" min={1} max={1000} required defaultValue={1} className={input} />
+        <p className="mt-1 text-xs text-gray-500">The number of people must not exceed the selected resource&apos;s capacity.</p>
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className={label} htmlFor="start">Start</label>
           <input id="start" name="start" type="datetime-local" required className={input} />
         </div>
+        <p className="-mt-2 text-xs text-gray-500">
+          Overnight bookings are allowed when the resource stays open through midnight. Enter the end time on the following date.
+        </p>
         <div>
           <label className={label} htmlFor="end">End</label>
           <input id="end" name="end" type="datetime-local" required className={input} />

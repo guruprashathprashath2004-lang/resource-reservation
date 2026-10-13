@@ -23,11 +23,52 @@ export async function createTeam(_: FormState, formData: FormData): Promise<Form
   });
   if (existing) return { error: "A team with this name already exists." };
 
-  const team = await prisma.team.create({ data: { name: parsed.data } });
-  await prisma.auditLog.create({
-    data: { action: "TEAM_CREATED", entity: "Team", entityId: team.id, userId: admin.id },
+  await prisma.$transaction(async (tx) => {
+    const team = await tx.team.create({ data: { name: parsed.data } });
+    await tx.auditLog.create({
+      data: {
+        action: "TEAM_CREATED",
+        entity: "Team",
+        entityId: team.id,
+        userId: admin.id,
+        details: { name: team.name },
+      },
+    });
   });
 
   revalidatePath("/teams");
+  return undefined;
+}
+
+export async function deleteTeam(_: FormState, formData: FormData): Promise<FormState> {
+  const admin = await requireAdmin();
+  const id = z.string().min(1, "Missing team id.").safeParse(formData.get("id"));
+  if (!id.success) return { error: id.error.issues[0].message };
+
+  const result = await prisma.$transaction(async (tx) => {
+    const team = await tx.team.findUnique({ where: { id: id.data } });
+    if (!team) return { error: "This team no longer exists." };
+
+    const { count: unassignedMembers } = await tx.user.updateMany({
+      where: { teamId: team.id },
+      data: { teamId: null },
+    });
+    await tx.team.delete({ where: { id: team.id } });
+    await tx.auditLog.create({
+      data: {
+        action: "TEAM_DELETED",
+        entity: "Team",
+        entityId: team.id,
+        userId: admin.id,
+        details: { name: team.name, unassignedMembers },
+      },
+    });
+    return {};
+  });
+
+  if ("error" in result) return result;
+
+  revalidatePath("/teams");
+  revalidatePath("/register");
   return undefined;
 }

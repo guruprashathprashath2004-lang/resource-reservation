@@ -2,15 +2,14 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/app/generated/prisma/client";
 import { requireAdmin } from "@/lib/auth";
-import { formatDateTime } from "@/lib/datetime";
+import { formatDateTime, isValidDateOnly } from "@/lib/datetime";
 
 const PAGE_SIZE = 20;
 const DAY_MS = 24 * 60 * 60 * 1000;
-const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 const ACTIONS = [
   { value: "RESERVATION_CREATED", label: "Reservation created" },
-    { value: "RESERVATION_UPDATED", label: "Reservation updated" },
+  { value: "RESERVATION_UPDATED", label: "Reservation updated" },
   { value: "RESERVATION_APPROVED", label: "Reservation approved" },
   { value: "RESERVATION_REJECTED", label: "Reservation rejected" },
   { value: "RESERVATION_CANCELLED", label: "Reservation cancelled" },
@@ -18,9 +17,11 @@ const ACTIONS = [
   { value: "RESOURCE_UPDATED", label: "Resource updated" },
   { value: "RESOURCE_ACTIVATED", label: "Resource activated" },
   { value: "RESOURCE_DEACTIVATED", label: "Resource deactivated" },
+  { value: "RESOURCE_DELETED", label: "Resource deleted" },
   { value: "CATEGORY_CREATED", label: "Category created" },
   { value: "CATEGORY_DELETED", label: "Category deleted" },
   { value: "TEAM_CREATED", label: "Team created" },
+  { value: "TEAM_DELETED", label: "Team deleted" },
 ];
 
 const actionLabel = new Map(ACTIONS.map((a) => [a.value, a.label]));
@@ -36,10 +37,6 @@ type SearchParams = Record<string, string | string[] | undefined>;
 
 function one(value: string | string[] | undefined) {
   return typeof value === "string" ? value.trim() : "";
-}
-
-function validDate(value: string) {
-  return DATE_PATTERN.test(value) && !Number.isNaN(new Date(`${value}T00:00:00Z`).getTime());
 }
 
 function buildHref(params: Record<string, string>, page: number) {
@@ -62,8 +59,8 @@ export default async function AuditLogPage({
 
   const action = ACTIONS.some((a) => a.value === one(raw.action)) ? one(raw.action) : "";
   const userId = one(raw.user);
-  const from = validDate(one(raw.from)) ? one(raw.from) : "";
-  const to = validDate(one(raw.to)) ? one(raw.to) : "";
+  const from = isValidDateOnly(one(raw.from)) ? one(raw.from) : "";
+  const to = isValidDateOnly(one(raw.to)) ? one(raw.to) : "";
   const requestedPage = Math.max(1, Number.parseInt(one(raw.page), 10) || 1);
 
   const filters = { action, user: userId, from, to };
@@ -194,6 +191,7 @@ export default async function AuditLogPage({
                   <th className="px-4 py-3">Who</th>
                   <th className="px-4 py-3">Action</th>
                   <th className="px-4 py-3">Target</th>
+                  <th className="px-4 py-3">Details</th>
                 </tr>
               </thead>
               <tbody>
@@ -220,6 +218,18 @@ export default async function AuditLogPage({
                     <td className="px-4 py-3">
                       {targets.get(`${l.entity}:${l.entityId}`) ?? (
                         <span className="text-gray-400">(removed)</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      {l.details ? (
+                        <details>
+                          <summary className="cursor-pointer text-indigo-600 hover:underline">View</summary>
+                          <pre className="mt-2 max-w-md overflow-x-auto whitespace-pre-wrap rounded bg-gray-50 p-2 text-xs text-gray-700">
+                            {JSON.stringify(l.details, null, 2)}
+                          </pre>
+                        </details>
+                      ) : (
+                        <span className="text-gray-400">—</span>
                       )}
                     </td>
                   </tr>

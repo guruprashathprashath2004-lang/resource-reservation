@@ -7,11 +7,10 @@ import {
   approveReservation,
   rejectReservation,
 } from "@/app/actions/reservations";
-import { formatDateTime } from "@/lib/datetime";
+import { formatDateTime, isValidDateOnly } from "@/lib/datetime";
 
 const PAGE_SIZE = 10;
 const DAY_MS = 24 * 60 * 60 * 1000;
-const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 const STATUS_OPTIONS = [
   { value: "PENDING", label: "Pending" },
@@ -37,10 +36,6 @@ function one(value: string | string[] | undefined) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function validDate(value: string) {
-  return DATE_PATTERN.test(value) && !Number.isNaN(new Date(`${value}T00:00:00Z`).getTime());
-}
-
 function buildHref(params: Record<string, string>, page: number) {
   const sp = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
@@ -63,8 +58,8 @@ export default async function ReservationsPage({
   const q = one(raw.q).slice(0, 100);
   const status = STATUS_OPTIONS.some((s) => s.value === one(raw.status)) ? one(raw.status) : "";
   const resourceId = one(raw.resource);
-  const from = validDate(one(raw.from)) ? one(raw.from) : "";
-  const to = validDate(one(raw.to)) ? one(raw.to) : "";
+  const from = isValidDateOnly(one(raw.from)) ? one(raw.from) : "";
+  const to = isValidDateOnly(one(raw.to)) ? one(raw.to) : "";
   const requestedPage = Math.max(1, Number.parseInt(one(raw.page), 10) || 1);
 
   const now = new Date();
@@ -217,6 +212,7 @@ export default async function ReservationsPage({
                   <th className="px-4 py-3">Title</th>
                   <th className="px-4 py-3">Resource</th>
                   {isAdmin && <th className="px-4 py-3">Booked by</th>}
+                  <th className="px-4 py-3">People</th>
                   <th className="px-4 py-3">Start</th>
                   <th className="px-4 py-3">End</th>
                   <th className="px-4 py-3">Status</th>
@@ -246,6 +242,7 @@ export default async function ReservationsPage({
                           )}
                         </td>
                       )}
+                      <td className="px-4 py-3">{r.attendeeCount} / {r.resource.capacity}</td>
                       <td className="px-4 py-3">{formatDateTime(r.startTime)}</td>
                       <td className="px-4 py-3">{formatDateTime(r.endTime)}</td>
                       <td className="px-4 py-3">

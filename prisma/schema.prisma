@@ -73,18 +73,19 @@ model Resource {
 }
 
 model Reservation {
-  id         String            @id @default(cuid())
-  title      String
-  notes      String?
-  startTime  DateTime          @db.Timestamptz(3)
-  endTime    DateTime          @db.Timestamptz(3)
-  status     ReservationStatus @default(PENDING)
-  resourceId String
-  resource   Resource          @relation(fields: [resourceId], references: [id], onDelete: Restrict)
-  userId     String
-  user       User              @relation(fields: [userId], references: [id], onDelete: Restrict)
-  createdAt  DateTime          @default(now()) @db.Timestamptz(3)
-  updatedAt  DateTime          @updatedAt @db.Timestamptz(3)
+  id            String            @id @default(cuid())
+  title         String
+  notes         String?
+  attendeeCount Int               @default(1)
+  startTime     DateTime          @db.Timestamptz(3)
+  endTime       DateTime          @db.Timestamptz(3)
+  status        ReservationStatus @default(PENDING)
+  resourceId    String
+  resource      Resource          @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+  userId        String
+  user          User              @relation(fields: [userId], references: [id], onDelete: Restrict)
+  createdAt     DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime          @updatedAt @db.Timestamptz(3)
 
   @@index([resourceId, startTime, endTime])
   @@index([userId])

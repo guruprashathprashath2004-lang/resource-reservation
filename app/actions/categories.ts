@@ -23,39 +23,53 @@ export async function createCategory(_: FormState, formData: FormData): Promise<
   });
   if (existing) return { error: "A category with this name already exists." };
 
-  const category = await prisma.resourceCategory.create({ data: { name: parsed.data } });
-  await prisma.auditLog.create({
-    data: {
-      action: "CATEGORY_CREATED",
-      entity: "ResourceCategory",
-      entityId: category.id,
-      userId: admin.id,
-    },
+  await prisma.$transaction(async (tx) => {
+    const category = await tx.resourceCategory.create({ data: { name: parsed.data } });
+    await tx.auditLog.create({
+      data: {
+        action: "CATEGORY_CREATED",
+        entity: "ResourceCategory",
+        entityId: category.id,
+        userId: admin.id,
+        details: { name: category.name },
+      },
+    });
   });
 
   revalidatePath("/resources/categories");
   return undefined;
 }
 
-export async function deleteCategory(formData: FormData) {
+export async function deleteCategory(_: FormState, formData: FormData): Promise<FormState> {
   const admin = await requireAdmin();
-  const id = String(formData.get("id") ?? "");
+  const id = z.string().min(1, "Missing category id.").safeParse(formData.get("id"));
 
-  // A category that still has resources cannot be removed
-  const inUse = await prisma.resource.count({ where: { categoryId: id } });
-  if (inUse > 0) return;
+  if (!id.success) return { error: id.error.issues[0].message };
 
-  const result = await prisma.resourceCategory.deleteMany({ where: { id } });
-  if (result.count === 0) return;
+  const deleted = await prisma.$transaction(async (tx) => {
+    const category = await tx.resourceCategory.findUnique({ where: { id: id.data } });
+    if (!category) return { error: "This category no longer exists." };
 
-  await prisma.auditLog.create({
-    data: {
-      action: "CATEGORY_DELETED",
-      entity: "ResourceCategory",
-      entityId: id,
-      userId: admin.id,
-    },
+    // A category that still has resources cannot be removed.
+    const inUse = await tx.resource.count({ where: { categoryId: id.data } });
+    if (inUse > 0) return { error: "This category still has resources and cannot be deleted." };
+
+    await tx.resourceCategory.delete({ where: { id: id.data } });
+
+    await tx.auditLog.create({
+      data: {
+        action: "CATEGORY_DELETED",
+        entity: "ResourceCategory",
+        entityId: id.data,
+        userId: admin.id,
+        details: { name: category.name },
+      },
+    });
+    return {};
   });
 
+  if ("error" in deleted) return deleted;
+
   revalidatePath("/resources/categories");
+  return undefined;
 }

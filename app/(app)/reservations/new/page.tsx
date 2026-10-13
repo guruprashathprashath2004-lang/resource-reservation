@@ -7,7 +7,7 @@ export default async function NewReservationPage() {
   const resources = await prisma.resource.findMany({
     where: { isActive: true },
     orderBy: { name: "asc" },
-    select: { id: true, name: true, openHour: true, closeHour: true, maxDurationMinutes: true },
+    select: { id: true, name: true, capacity: true, openHour: true, closeHour: true, maxDurationMinutes: true },
   });
 
   return (

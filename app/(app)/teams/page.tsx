@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import TeamForm from "@/components/TeamForm";
+import DeleteConfirmationForm from "@/components/DeleteConfirmationForm";
+import { deleteTeam } from "@/app/actions/teams";
 
 export default async function TeamsPage() {
   await requireAdmin();
@@ -27,6 +29,7 @@ export default async function TeamsPage() {
               <tr>
                 <th className="px-4 py-3">Team</th>
                 <th className="px-4 py-3">Members</th>
+                <th className="px-4 py-3"></th>
               </tr>
             </thead>
             <tbody>
@@ -34,6 +37,13 @@ export default async function TeamsPage() {
                 <tr key={t.id} className="border-b border-gray-100 last:border-0">
                   <td className="px-4 py-3 font-medium">{t.name}</td>
                   <td className="px-4 py-3">{t._count.users}</td>
+                  <td className="px-4 py-3 text-right">
+                    <DeleteConfirmationForm
+                      action={deleteTeam}
+                      id={t.id}
+                      confirmMessage={`Delete "${t.name}"? Its ${t._count.users} member(s) will remain in the system but will no longer belong to a team.`}
+                    />
+                  </td>
                 </tr>
               ))}
             </tbody>

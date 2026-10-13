@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import { deleteCategory } from "@/app/actions/categories";
 import CategoryForm from "@/components/CategoryForm";
+import DeleteConfirmationForm from "@/components/DeleteConfirmationForm";
 
 export default async function CategoriesPage() {
   await requireAdmin();
@@ -44,12 +45,11 @@ export default async function CategoriesPage() {
                   <td className="px-4 py-3">{c._count.resources}</td>
                   <td className="px-4 py-3 text-right">
                     {c._count.resources === 0 ? (
-                      <form action={deleteCategory}>
-                        <input type="hidden" name="id" value={c.id} />
-                        <button className="rounded-md border border-red-300 px-2 py-1 text-red-700 hover:bg-red-50">
-                          Delete
-                        </button>
-                      </form>
+                      <DeleteConfirmationForm
+                        action={deleteCategory}
+                        id={c.id}
+                        confirmMessage={`Permanently delete "${c.name}"?`}
+                      />
                     ) : (
                       <span className="text-xs text-gray-400">In use</span>
                     )}

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { toggleResourceActive } from "@/app/actions/resources";
+import { deleteResource } from "@/app/actions/resources";
+import DeleteConfirmationForm from "@/components/DeleteConfirmationForm";
 
 export default async function ResourcesPage() {
   const user = await requireUser();
@@ -9,7 +11,7 @@ export default async function ResourcesPage() {
 
   const resources = await prisma.resource.findMany({
     where: isAdmin ? {} : { isActive: true },
-    include: { category: true },
+    include: { category: true, _count: { select: { reservations: true } } },
     orderBy: [{ category: { name: "asc" } }, { name: "asc" }],
   });
 
@@ -70,6 +72,17 @@ export default async function ResourcesPage() {
                             {r.isActive ? "Deactivate" : "Activate"}
                           </button>
                         </form>
+                        {r._count.reservations === 0 ? (
+                          <DeleteConfirmationForm
+                            action={deleteResource}
+                            id={r.id}
+                            confirmMessage={`Permanently delete "${r.name}"? This resource has no reservation history.`}
+                          />
+                        ) : (
+                          <span className="self-center text-xs text-gray-400">
+                            {r._count.reservations} booking{r._count.reservations === 1 ? "" : "s"} — deactivate to keep history
+                          </span>
+                        )}
                       </div>
                     )}
                   </td>

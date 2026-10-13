@@ -28,10 +28,12 @@ export default async function EditReservationPage({ params }: { params: Promise<
       <EditReservationForm
         id={reservation.id}
         resourceName={reservation.resource.name}
+        capacity={reservation.resource.capacity}
         openHour={reservation.resource.openHour}
         closeHour={reservation.resource.closeHour}
         maxDurationMinutes={reservation.resource.maxDurationMinutes}
         title={reservation.title}
+        attendeeCount={reservation.attendeeCount}
         notes={reservation.notes}
         start={toColomboInputValue(reservation.startTime)}
         end={toColomboInputValue(reservation.endTime)}

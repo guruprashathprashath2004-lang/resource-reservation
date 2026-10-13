@@ -7,10 +7,12 @@ import { updateReservation } from "@/app/actions/reservations";
 type Props = {
   id: string;
   resourceName: string;
+  capacity: number;
   openHour: number;
   closeHour: number;
   maxDurationMinutes: number;
   title: string;
+  attendeeCount: number;
   notes: string | null;
   start: string;
   end: string;
@@ -32,12 +34,18 @@ export default function EditReservationForm(props: Props) {
         <p className="rounded-md bg-gray-50 px-3 py-2 text-gray-700">
           {props.resourceName}{" "}
           <span className="text-sm text-gray-500">
-            ({props.openHour}:00-{props.closeHour}:00, max {props.maxDurationMinutes} min)
+            ({props.openHour}:00-{props.closeHour}:00, capacity {props.capacity}, max {props.maxDurationMinutes} min)
           </span>
         </p>
         <p className="mt-1 text-xs text-gray-500">
           To use a different resource, cancel this booking and create a new one.
         </p>
+      </div>
+
+      <div>
+        <label className={label} htmlFor="attendeeCount">Number of people</label>
+        <input id="attendeeCount" name="attendeeCount" type="number" min={1} max={1000} required defaultValue={props.attendeeCount} className={input} />
+        <p className="mt-1 text-xs text-gray-500">The number of people must not exceed this resource&apos;s capacity.</p>
       </div>
 
       <div>
@@ -50,6 +58,9 @@ export default function EditReservationForm(props: Props) {
           <label className={label} htmlFor="start">Start</label>
           <input id="start" name="start" type="datetime-local" required defaultValue={props.start} className={input} />
         </div>
+        <p className="-mt-2 text-xs text-gray-500">
+          Overnight bookings are allowed when the resource stays open through midnight. Enter the end time on the following date.
+        </p>
         <div>
           <label className={label} htmlFor="end">End</label>
           <input id="end" name="end" type="datetime-local" required defaultValue={props.end} className={input} />
