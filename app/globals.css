@@ -1,26 +1,318 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ================= Light: frosted glass ================= */
+:root {
+  color-scheme: light;
+
+  --accent-1: #7c3aed;
+  --accent-2: #06b6d4;
+  --gold-text: #a16207;
+
+  --radius-md: 0.85rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+
+  --color-white: rgb(255 255 255 / 0.55);
+  --color-gray-50: rgb(255 255 255 / 0.35);
+  --color-gray-100: rgb(15 23 42 / 0.06);
+  --color-gray-200: rgb(100 116 139 / 0.22);
+  --color-gray-300: rgb(100 116 139 / 0.35);
+
+  --field-bg: rgb(255 255 255 / 0.55);
+  --glass-shadow:
+    0 10px 40px rgb(76 29 149 / 0.12),
+    inset 0 1px 0 rgb(255 255 255 / 0.8),
+    inset 0 -1px 0 rgb(255 255 255 / 0.25);
+  --page-bg: linear-gradient(160deg, #eef2ff 0%, #f5f3ff 45%, #ecfeff 100%);
+  --orb-1: rgb(167 139 250 / 0.55);
+  --orb-2: rgb(103 232 249 / 0.5);
+  --orb-3: rgb(251 207 232 / 0.55);
+}
+
+/* ================= Dark: gaming glass ================= */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --accent-1: #8b5cf6;
+  --accent-2: #22d3ee;
+  --gold-text: #f5c451;
+
+  --color-white: rgb(255 255 255 / 0.06);
+  --color-gray-50: rgb(255 255 255 / 0.04);
+  --color-gray-100: rgb(255 255 255 / 0.08);
+  --color-gray-200: rgb(255 255 255 / 0.14);
+  --color-gray-300: rgb(255 255 255 / 0.22);
+  --color-gray-400: #8b95ad;
+  --color-gray-500: #a3adc2;
+  --color-gray-600: #c2cadb;
+  --color-gray-700: #dbe1ee;
+  --color-gray-900: #f4f6fb;
+
+  /* used for text links in dark, buttons get the gradient below */
+  --color-indigo-600: #a78bfa;
+  --color-indigo-700: #8b5cf6;
+
+  --color-green-100: rgb(34 197 94 / 0.18);
+  --color-green-700: #86efac;
+  --color-red-50: rgb(239 68 68 / 0.12);
+  --color-red-100: rgb(239 68 68 / 0.2);
+  --color-red-300: rgb(252 165 165 / 0.5);
+  --color-red-700: #fca5a5;
+  --color-yellow-50: rgb(245 196 81 / 0.12);
+  --color-yellow-100: rgb(245 196 81 / 0.2);
+  --color-yellow-600: #f5c451;
+  --color-yellow-700: #fcd34d;
+  --color-yellow-800: #fde68a;
+  --color-blue-100: rgb(59 130 246 / 0.2);
+  --color-blue-700: #93c5fd;
+
+  --field-bg: rgb(255 255 255 / 0.06);
+  --glass-shadow:
+    0 12px 40px rgb(0 0 0 / 0.45),
+    inset 0 1px 0 rgb(255 255 255 / 0.18),
+    inset 0 -1px 0 rgb(255 255 255 / 0.04);
+  --page-bg: #070711;
+  --orb-1: rgb(124 58 237 / 0.38);
+  --orb-2: rgb(34 211 238 / 0.22);
+  --orb-3: rgb(236 72 153 / 0.18);
+}
+
+/* ================= Base ================= */
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  background: var(--page-bg);
+  background-attachment: fixed;
+  color: var(--color-gray-900, #111827);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* slow drifting glow behind everything */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(28rem 28rem at 15% 20%, var(--orb-1), transparent 65%),
+    radial-gradient(24rem 24rem at 85% 30%, var(--orb-2), transparent 65%),
+    radial-gradient(30rem 30rem at 50% 95%, var(--orb-3), transparent 65%);
+  animation: drift 24s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(2%, -3%, 0) scale(1.08); }
+}
+
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(10px) scale(0.995); }
+  to { opacity: 1; transform: none; }
+}
+
+.page-enter {
+  animation: page-enter 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* smooth everything interactive */
+button, a, select, input, textarea {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease,
+    color 0.2s ease,
+    filter 0.2s ease;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+}
+
+::placeholder {
+  color: var(--color-gray-400, #9ca3af);
+}
+
+/* ================= Glass panels ================= */
+.bg-white {
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+  backdrop-filter: blur(20px) saturate(170%);
+}
+
+.rounded-xl.bg-white,
+.glass-nav {
+  background-image: linear-gradient(
+    135deg,
+    rgb(255 255 255 / 0.16),
+    rgb(255 255 255 / 0.02) 40%,
+    rgb(255 255 255 / 0.06)
+  );
+  box-shadow: var(--glass-shadow);
+  transition:
+    transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* clickable cards lift and glow gold */
+a.rounded-xl.bg-white:hover {
+  transform: translateY(-3px);
+  border-color: rgb(245 196 81 / 0.55);
+}
+
+/* ================= Forms ================= */
+input,
+select,
+textarea {
+  background-color: var(--field-bg);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 3px rgb(34 211 238 / 0.22);
+}
+
+:root[data-theme="dark"] select option {
+  background: #141a2b;
+  color: #f4f6fb;
+}
+
+/* ================= Buttons and bars ================= */
+.text-white {
+  color: #fff;
+}
+
+.bg-indigo-600,
+.bg-indigo-500 {
+  background-color: transparent;
+  background-image: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+}
+
+button.bg-indigo-600,
+a.bg-indigo-600 {
+  box-shadow: 0 6px 22px rgb(124 58 237 / 0.4), inset 0 1px 0 rgb(255 255 255 / 0.35);
+}
+
+button.bg-indigo-600:hover,
+a.bg-indigo-600:hover,
+button.bg-green-600:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.12) saturate(1.1);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+.bg-green-600 {
+  background-color: transparent;
+  background-image: linear-gradient(135deg, #10b981, #06b6d4);
+}
+
+.bg-emerald-500 {
+  background-color: transparent;
+  background-image: linear-gradient(90deg, #2dd4bf, #22d3ee);
+}
+
+.bg-yellow-400 {
+  background-color: transparent;
+  background-image: linear-gradient(135deg, #fde68a, #f5c451);
+}
+
+/* ================= Tables ================= */
+tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+tbody tr:hover {
+  background-color: rgb(139 92 246 / 0.08);
+}
+
+/* ================= Nav ================= */
+.nav-link {
+  color: var(--color-gray-600);
+}
+
+.nav-link:hover {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-900);
+}
+
+.nav-link-active {
+  color: #fff;
+  background-image: linear-gradient(135deg, rgb(139 92 246 / 0.9), rgb(34 211 238 / 0.8));
+  box-shadow: 0 4px 18px rgb(139 92 246 / 0.45), inset 0 1px 0 rgb(255 255 255 / 0.4);
+}
+
+.nav-link-active:hover {
+  color: #fff;
+  background-color: transparent;
+}
+
+.brand {
+  background-image: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.role-badge {
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  background: var(--color-gray-100);
+}
+
+.role-admin {
+  color: var(--gold-text);
+  background: rgb(245 196 81 / 0.14);
+  border: 1px solid rgb(245 196 81 / 0.45);
+}
+
+/* ================= Headings ================= */
+h1 {
+  letter-spacing: -0.02em;
+}
+
+:root[data-theme="dark"] h1 {
+  background-image: linear-gradient(90deg, #ffffff 0%, #ddd6fe 55%, #67e8f9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ================= Theme toggle icons ================= */
+:root[data-theme="dark"] .icon-moon,
+:root:not([data-theme="dark"]) .icon-sun {
+  display: none;
+}
+
+:root[data-theme="dark"] * {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.25) transparent;
+}
+
+/* ================= Fallbacks ================= */
+@supports not (backdrop-filter: blur(1px)) {
+  :root { --color-white: rgb(255 255 255 / 0.85); }
+  :root[data-theme="dark"] { --color-white: rgb(24 28 44 / 0.92); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before, .page-enter { animation: none; }
+  * { transition-duration: 0.01ms !important; }
 }
