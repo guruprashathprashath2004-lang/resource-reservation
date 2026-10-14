@@ -94,6 +94,39 @@ Open [http://localhost:3000](http://localhost:3000).
 - **Prefer meaningful cancellation over destructive deletion.** Reservation status changes preserve history and allow a cancelled slot to be reused without erasing the original request.
 - **Preserve reservation history when deleting resources.** Resources with any reservations cannot be deleted; admins can deactivate them instead. Deleting a team only removes its memberships, leaving users, reservations, and audit history intact.
 
+## Application architecture
+
+The app uses the Next.js App Router as a server-rendered web application. Pages and server actions enforce authentication and roles on the server; Prisma accesses PostgreSQL through its driver adapter. Reservation and administrative writes pair their database change with an audit entry in one transaction. PostgreSQL constraints and triggers provide the final booking-overlap and attendee-capacity protections.
+
+```mermaid
+flowchart TB
+    browser["Browser<br/>React UI · forms · light/dark theme"]
+
+    subgraph next["Next.js App Router"]
+        pages["Server-rendered pages<br/>Dashboard · resources · availability<br/>reservations · teams · audit log"]
+        actions["Server actions<br/>Authentication · authorization<br/>Zod validation · business rules"]
+        session["Signed session cookie<br/>HttpOnly · role-aware access"]
+    end
+
+    subgraph data["Data access"]
+        prisma["Prisma ORM 7"]
+        adapter["PostgreSQL driver adapter<br/>UTC session"]
+    end
+
+    subgraph postgres["PostgreSQL"]
+        tables[("Application data<br/>Users · teams · categories<br/>resources · reservations · audit logs")]
+        guard["Database safeguards<br/>No overlapping active reservations<br/>Attendee capacity enforcement"]
+    end
+
+    browser <-->|"Web requests / rendered pages"| pages
+    browser -->|"Form submissions"| actions
+    actions <-->|"Issue / verify / clear"| session
+    pages -->|"Read queries"| prisma
+    actions -->|"Validated queries · audited transactions"| prisma
+    prisma --> adapter --> tables
+    tables --- guard
+```
+
 ## Database model
 
 ```mermaid
